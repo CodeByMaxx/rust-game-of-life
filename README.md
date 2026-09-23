@@ -4,7 +4,7 @@ A real-time implementation of **Conway's Game of Life** built with **Rust** and 
 
 The project simulates a cellular automaton where cells evolve according to Conway's rules. The simulation runs on a toroidal grid, meaning that the edges of the world wrap around.
 
-![2d Game of Life](Screenshot-1.png)
+[2d Game of Life](Screenshot-1.png)
 
 ---
 
@@ -138,7 +138,7 @@ Each cell is rendered at:
 
 The world is stored as a one-dimensional Rust vector:
 
-```rust
+```text
 Vec<bool>
 ```
 
@@ -160,7 +160,7 @@ represents:
 
 A two-dimensional position is converted into an array index using:
 
-```rust
+```text
 index = y * WIDTH + x
 ```
 
@@ -186,7 +186,7 @@ Likewise, moving beyond the top brings it back at the bottom.
 
 The coordinate wrapping is implemented using Rust's:
 
-```rust
+```text
 rem_euclid()
 ```
 
