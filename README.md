@@ -1,24 +1,23 @@
 # Conway's Game of Life in Rust + Bevy
 
-A real-time implementation of **Conway's Game of Life** built with **Rust** and the **Bevy game engine**.
+A real-time implementation of **Conway's Game of Life** written in **Rust** using the **Bevy** game engine.
 
-The project simulates a cellular automaton where cells evolve according to Conway's rules. The simulation runs on a toroidal grid, meaning that the edges of the world wrap around.
+The simulation uses a toroidal world, random initial states and a simple double-buffered update approach.
 
-[2d Game of Life](Screenshot-1.png)
+![Game of Life](Screenshot-1.png)
 
 ---
 
 ## Features
 
-* 🦀 Written in Rust
-* 🎮 Built with the Bevy game engine
-* 🧬 Conway's Game of Life simulation
-* 🎲 Random world generation
-* ⚡ Real-time simulation
-* 🔄 Toroidal world with wrapped edges
-* ⏯️ Pause and resume simulation
-* 🔁 Generate a new random world
-* 💾 Compact world representation using `Vec<bool>`
+* Conway's Game of Life simulation
+* Rust + Bevy
+* Random initial world
+* Real-time rendering
+* Toroidal world with wrapped edges
+* Pause / Resume
+* Generate a new random world
+* Simple and lightweight implementation
 
 ---
 
@@ -26,14 +25,10 @@ The project simulates a cellular automaton where cells evolve according to Conwa
 
 You need:
 
-* Rust
+* [Rust](https://www.rust-lang.org/tools/install)
 * Cargo
 
-Install Rust using the official installer:
-
-https://www.rust-lang.org/tools/install
-
-Verify your installation:
+Verify the installation:
 
 ```bash
 rustc --version
@@ -42,7 +37,7 @@ cargo --version
 
 ---
 
-## Getting Started
+## Run the Application
 
 Clone the repository:
 
@@ -51,7 +46,7 @@ git clone https://github.com/CodeByMaxx/rust-game-of-life.git
 cd rust-game-of-life
 ```
 
-Run the application:
+Start the application:
 
 ```bash
 cargo run
@@ -61,60 +56,61 @@ cargo run
 
 ## Controls
 
-| Key     | Action                        |
-| ------- | ----------------------------- |
-| `Space` | Pause / resume the simulation |
-| `R`     | Generate a new random world   |
+| Key     | Action                      |
+| ------- | --------------------------- |
+| `Space` | Pause / Resume simulation   |
+| `R`     | Generate a new random world |
 
 ---
 
 ## How It Works
 
-The simulation maintains two worlds:
+The simulation maintains two world states:
 
 ```text
-current
-   |
-   | calculate next generation
-   v
-next
+Current World
+      │
+      ▼
+Calculate next generation
+      │
+      ▼
+Next World
+      │
+      ▼
+Swap worlds
+      │
+      └──────► repeat
 ```
 
-For each generation:
+The current generation is read without modifying it directly. The next generation is calculated from the current state and then the two worlds are swapped.
 
-1. The current world is read.
-2. The number of neighbors for each cell is calculated.
-3. Conway's Game of Life rules are applied.
-4. The next generation is written to the next world.
-5. The worlds are swapped.
-
-This separation keeps the current generation independent from the generation being calculated.
+This avoids modifying cells while their neighbours are still being evaluated.
 
 ---
 
 ## Conway's Game of Life
 
-Each cell checks its **8 neighboring cells**.
+Every cell checks its eight neighbouring cells.
 
-### Living Cells
+### Living Cell
 
-A living cell survives when it has:
+A living cell survives with:
 
-* 2 neighbors
-* 3 neighbors
+* 2 neighbours
+* 3 neighbours
 
-A living cell dies when it has:
+A living cell dies with:
 
-* fewer than 2 neighbors — underpopulation
-* more than 3 neighbors — overpopulation
+* fewer than 2 neighbours — underpopulation
+* more than 3 neighbours — overpopulation
 
-### Dead Cells
+### Dead Cell
 
-A dead cell becomes alive when it has:
+A dead cell becomes alive with exactly:
 
-* exactly 3 neighbors
+* 3 neighbours
 
-These simple rules create complex and continuously evolving patterns.
+These simple rules produce the characteristic emergent behaviour of Conway's Game of Life.
 
 ---
 
@@ -122,7 +118,7 @@ These simple rules create complex and continuously evolving patterns.
 
 ### World Size
 
-The current simulation uses a grid of:
+The current simulation uses:
 
 ```text
 150 × 100 cells
@@ -134,12 +130,20 @@ Each cell is rendered at:
 6 × 6 pixels
 ```
 
-### Data Representation
+---
+
+### Data Storage
 
 The world is stored as a one-dimensional Rust vector:
 
-```text
+```rust
 Vec<bool>
+```
+
+A two-dimensional coordinate is converted into an array index:
+
+```text
+index = y * WIDTH + x
 ```
 
 For example:
@@ -158,105 +162,99 @@ represents:
 . . .
 ```
 
-A two-dimensional position is converted into an array index using:
-
-```text
-index = y * WIDTH + x
-```
-
-This provides a compact representation of the simulation state.
-
 ---
 
 ## Toroidal World
 
-The simulation uses a **toroidal world**, so there are no real borders.
+The simulation has no hard boundaries.
 
 The edges wrap around:
 
 ```text
-0 1 2 3 4
-^         |
-|_________|
+┌─────────────────┐
+│                 │
+│                 │
+│                 │
+└─────────────────┘
+       ↕
+   connected
 ```
 
-Moving beyond the left edge brings a cell back on the right side.
+Moving beyond the left edge places the cell on the right side.
 
-Likewise, moving beyond the top brings it back at the bottom.
+Moving beyond the top places the cell at the bottom.
 
-The coordinate wrapping is implemented using Rust's:
+The implementation uses `rem_euclid()` to handle the wrapped coordinates.
 
-```text
-rem_euclid()
-```
+This creates a continuous, looping world without borders.
 
-This creates a continuous looping simulation without boundary conditions.
+---
+
+## Main Systems
+
+The application separates the main responsibilities into systems.
+
+### Simulation
+
+`update_game()`
+
+Responsible for:
+
+* counting neighbours
+* applying the Game of Life rules
+* calculating the next generation
+* updating the world state
+
+### Rendering
+
+`draw_game()`
+
+Responsible for:
+
+* checking living cells
+* calculating screen positions
+* drawing the cells
+
+### Input
+
+`keyboard()`
+
+Responsible for:
+
+* pausing and resuming the simulation
+* generating a new random world
 
 ---
 
 ## Project Structure
 
 ```text
-rust-game-of-life
+rust-game-of-life/
 │
 ├── Cargo.toml
 ├── Cargo.lock
+├── README.md
+├── Screenshot-1.png
 │
-└── src
+└── src/
     └── main.rs
 ```
 
 ---
 
-## Main Systems
+## Dependencies
 
-The application is divided into separate systems for simulation, rendering, and input.
-
-### Simulation
-
-The `update_game()` system calculates the next generation.
-
-Responsibilities:
-
-* Count neighboring cells
-* Apply Conway's rules
-* Generate the next world state
-
-### Rendering
-
-The `draw_game()` system is responsible for displaying the simulation.
-
-Responsibilities:
-
-* Identify living cells
-* Calculate screen positions
-* Draw the cells
-
-### Input
-
-The `keyboard()` system handles keyboard interaction.
-
-Responsibilities:
-
-* Pause and resume the simulation
-* Generate a new random world
-
----
-
-## Technologies
-
-| Technology | Purpose                          |
-| ---------- | -------------------------------- |
-| **Rust**   | Application and simulation logic |
-| **Bevy**   | Game engine and rendering        |
-| **Rand**   | Random world generation          |
-| **Cargo**  | Build and dependency management  |
+The project uses:
 
 ### Bevy
+
+The game engine used for rendering, application management and input handling.
 
 https://bevyengine.org/
 
 ### Rand
+
+Used for random world generation.
 
 https://crates.io/crates/rand
 
@@ -264,21 +262,27 @@ https://crates.io/crates/rand
 
 ## Future Improvements
 
-Planned features include:
+Possible extensions include:
 
-* [ ] Mouse interaction
-* [ ] Add and remove cells manually
-* [ ] Camera movement
-* [ ] Zoom functionality
-* [ ] Load predefined patterns
-* [ ] Gosper Glider Gun
-* [ ] Infinite world simulation
-* [ ] Texture-based rendering
-* [ ] GPU acceleration
+* mouse interaction
+* manually adding/removing cells
+* camera movement
+* zoom functionality
+* predefined patterns
+* Gosper Glider Gun
+* infinite-world simulation
+* texture-based rendering
+* GPU acceleration
 
 ---
 
 ## License
 
-This project is licensed under the **MIT License**.
+MIT License
+
+---
+
+## Author
+
+**Markus**
 
