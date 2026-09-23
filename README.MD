@@ -4,7 +4,7 @@ A real-time implementation of **Conway's Game of Life** built with **Rust** and 
 
 The project simulates a cellular automaton where cells evolve according to Conway's rules. The simulation runs on a toroidal grid, meaning that the edges of the world wrap around.
 
-[2d Game of Life](Screenshot-1.png)
+![2d Game of Life](Screenshot-1.png)
 
 ---
 
